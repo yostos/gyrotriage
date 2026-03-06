@@ -59,8 +59,11 @@ pub struct ChartData {
     pub pitch_rms: f64,
     pub roll_rms: f64,
     pub yaw_rms: f64,
-    pub smoothness: f64,
-    pub crop: f64,
+    pub smoothness_pct: f64,
+    pub max_smoothness_s: f64,
+    pub max_smoothness_at_high_velocity_s: f64,
+    pub zoom_limit_pct: f64,
+    pub zooming_speed_s: f64,
     pub composite_bins: Vec<f64>,
     pub pitch_bins: Vec<f64>,
     pub roll_bins: Vec<f64>,
@@ -90,8 +93,11 @@ pub fn prepare_data(
         pitch_rms: result.pitch.avg,
         roll_rms: result.roll.avg,
         yaw_rms: result.yaw.avg,
-        smoothness: rec.smoothness,
-        crop: rec.crop,
+        smoothness_pct: rec.smoothness_pct,
+        max_smoothness_s: rec.max_smoothness_s,
+        max_smoothness_at_high_velocity_s: rec.max_smoothness_at_high_velocity_s,
+        zoom_limit_pct: rec.zoom_limit_pct,
+        zooming_speed_s: rec.zooming_speed_s,
         composite_bins: comp_bins.iter().map(|b| b.rms).collect(),
         pitch_bins: axis_bins.iter().map(|b| b.pitch_rms).collect(),
         roll_bins: axis_bins.iter().map(|b| b.roll_rms).collect(),
@@ -516,13 +522,28 @@ fn draw_footer(area: &Area, data: &ChartData) -> Result<(), Box<dyn std::error::
             font_label,
         ))?;
         area.draw(&Text::new(
-            format!("smoothness = {:.1}", data.smoothness).as_str(),
+            format!("smoothness={:.0}%", data.smoothness_pct).as_str(),
             (420, y + 16),
             font_val.clone(),
         ))?;
         area.draw(&Text::new(
-            format!("crop \u{2248} {:.1}x", data.crop).as_str(),
-            (680, y + 16),
+            format!("max={:.3}s", data.max_smoothness_s).as_str(),
+            (600, y + 16),
+            font_val.clone(),
+        ))?;
+        area.draw(&Text::new(
+            format!("max@hv={:.3}s", data.max_smoothness_at_high_velocity_s).as_str(),
+            (770, y + 16),
+            font_val.clone(),
+        ))?;
+        area.draw(&Text::new(
+            format!("zoom_limit={:.0}%", data.zoom_limit_pct).as_str(),
+            (990, y + 16),
+            font_val.clone(),
+        ))?;
+        area.draw(&Text::new(
+            format!("zooming_speed={:.1}s", data.zooming_speed_s).as_str(),
+            (1170, y + 16),
             font_val,
         ))?;
     }
@@ -615,8 +636,17 @@ mod tests {
             pitch: AxisStats { avg: 8.2, std_dev: 4.5, max: 32.1 },
             roll: AxisStats { avg: 3.4, std_dev: 2.2, max: 18.7 },
             yaw: AxisStats { avg: 5.6, std_dev: 3.1, max: 24.4 },
+            pitch_velocities: vec![],
+            roll_velocities: vec![],
+            yaw_velocities: vec![],
         };
-        let rec = Recommendation { smoothness: 0.5, crop: 1.2 };
+        let rec = Recommendation {
+            smoothness_pct: 28.0,
+            max_smoothness_s: 0.700,
+            max_smoothness_at_high_velocity_s: 0.100,
+            zoom_limit_pct: 115.0,
+            zooming_speed_s: 4.0,
+        };
         (result, rec)
     }
 

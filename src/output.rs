@@ -22,7 +22,8 @@ Pitch:       avg={pavg:.1}°/s  std={pstd:.1}°/s  max={pmax:.1}°/s
 Roll:        avg={ravg:.1}°/s  std={rstd:.1}°/s  max={rmax:.1}°/s
 Yaw:         avg={yavg:.1}°/s  std={ystd:.1}°/s  max={ymax:.1}°/s
 ---
-Gyroflow:    smoothness={smoothness:.1}  crop≈{crop:.1}x",
+Gyroflow:    smoothness={smoothness:.0}%  max={max_s:.3}s  max@hv={max_hv:.3}s
+             zoom_limit={zoom:.0}%  zooming_speed={zspeed:.1}s",
         duration = result.duration_secs,
         samples = result.sample_count,
         rate = result.sample_rate_hz,
@@ -39,8 +40,11 @@ Gyroflow:    smoothness={smoothness:.1}  crop≈{crop:.1}x",
         yavg = result.yaw.avg,
         ystd = result.yaw.std_dev,
         ymax = result.yaw.max,
-        smoothness = rec.smoothness,
-        crop = rec.crop,
+        smoothness = rec.smoothness_pct,
+        max_s = rec.max_smoothness_s,
+        max_hv = rec.max_smoothness_at_high_velocity_s,
+        zoom = rec.zoom_limit_pct,
+        zspeed = rec.zooming_speed_s,
     )
 }
 
@@ -79,8 +83,17 @@ mod tests {
             pitch: AxisStats { avg: 8.2, std_dev: 4.5, max: 32.1 },
             roll: AxisStats { avg: 3.4, std_dev: 2.2, max: 18.7 },
             yaw: AxisStats { avg: 5.6, std_dev: 3.1, max: 24.4 },
+            pitch_velocities: vec![],
+            roll_velocities: vec![],
+            yaw_velocities: vec![],
         };
-        let rec = Recommendation { smoothness: 0.5, crop: 1.2 };
+        let rec = Recommendation {
+            smoothness_pct: 28.0,
+            max_smoothness_s: 0.700,
+            max_smoothness_at_high_velocity_s: 0.100,
+            zoom_limit_pct: 115.0,
+            zooming_speed_s: 4.0,
+        };
         let path = PathBuf::from("DJI_20260227_0001.MP4");
         let output = format_result(&path, &result, &rec);
 
@@ -88,8 +101,11 @@ mod tests {
         assert!(output.contains("72 / 100"));
         assert!(output.contains("MODERATE"));
         assert!(output.contains("14.4 °/s"));
-        assert!(output.contains("smoothness=0.5"));
-        assert!(output.contains("crop≈1.2x"));
+        assert!(output.contains("smoothness=28%"));
+        assert!(output.contains("max=0.700s"));
+        assert!(output.contains("max@hv=0.100s"));
+        assert!(output.contains("zoom_limit=115%"));
+        assert!(output.contains("zooming_speed=4.0s"));
     }
 
     #[test]

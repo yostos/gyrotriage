@@ -6,6 +6,7 @@ mod extract;
 mod output;
 mod recommend;
 mod sparkline;
+mod spectrum;
 mod terminal;
 
 use std::path::PathBuf;
