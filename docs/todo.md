@@ -14,8 +14,9 @@
 
 ## Gyroflow推奨パラメータ
 
-- [x] ブレスコアからGyroflow推奨パラメータ（smoothness、crop）への対応ロジックを定義する
-  - **解決**: 区分線形マッピング。スコア0-25→0.2, 26-50→0.3-0.5, 51-75→0.5-0.8, 76-100→0.8-1.5。crop推定: `1 + smoothness × RMS角速度 / FOV°`。→ spec.md「Gyroflow推奨パラメータ」参照
+- [x] ~~ブレスコアからGyroflow推奨パラメータ（smoothness、crop）への対応ロジックを定義する~~
+  - **v0.1.0（旧）**: 区分線形マッピング。根拠のない恣意的な値だった
+  - **v0.2.0（現行）**: FFT/PSD周波数解析ベースに全面書き換え。Gyroflowの実際のパラメータ仕様を調査した上で、5パラメータ（smoothness %, max smoothness, max smoothness at high velocity, zoom limit, zooming speed）を信号処理から導出。→ `docs/recommendation-algorithm.ja.md` 参照
 
 ## 解析ロジック
 

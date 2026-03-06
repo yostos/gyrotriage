@@ -56,6 +56,10 @@ pub struct AnalysisResult {
     pub pitch: AxisStats,
     pub roll: AxisStats,
     pub yaw: AxisStats,
+    /// Per-axis angular velocity time series (°/s) for spectral analysis.
+    pub pitch_velocities: Vec<f64>,
+    pub roll_velocities: Vec<f64>,
+    pub yaw_velocities: Vec<f64>,
 }
 
 /// Quaternion conjugate: q* = (w, -x, -y, -z)
@@ -168,6 +172,10 @@ pub fn analyze(quaternions: &[TimeQuaternion<f64>]) -> AnalysisResult {
     let score = score_raw.round() as u32;
     let level = Level::from_score(score);
 
+    let pitch_stats = compute_axis_stats(&pitch_velocities);
+    let roll_stats = compute_axis_stats(&roll_velocities);
+    let yaw_stats = compute_axis_stats(&yaw_velocities);
+
     AnalysisResult {
         duration_secs,
         sample_count: n,
@@ -176,9 +184,12 @@ pub fn analyze(quaternions: &[TimeQuaternion<f64>]) -> AnalysisResult {
         peak_velocity,
         score,
         level,
-        pitch: compute_axis_stats(&pitch_velocities),
-        roll: compute_axis_stats(&roll_velocities),
-        yaw: compute_axis_stats(&yaw_velocities),
+        pitch: pitch_stats,
+        roll: roll_stats,
+        yaw: yaw_stats,
+        pitch_velocities,
+        roll_velocities,
+        yaw_velocities,
     }
 }
 
