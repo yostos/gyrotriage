@@ -53,13 +53,14 @@ gyrotriage clip.MP4 --sparkline
 
 ### Options
 
-| Option | Description |
-|---|---|
-| `--visual` | Display HUD graph in terminal via Sixel/iTerm2 |
-| `--output-image <PATH>` | Export as PNG image file |
-| `--sparkline` | Append ANSI sparklines to text output |
-| `--sixel` | Force Sixel protocol (use with `--visual`) |
-| `--iterm2` | Force iTerm2 protocol (use with `--visual`) |
+| Option | Short | Description |
+|---|---|---|
+| `--visual` | `-v` | Display HUD graph in terminal via Sixel/iTerm2 |
+| `--output-image <PATH>` | `-o` | Export as PNG image file |
+| `--sparkline` | `-s` | Append ANSI sparklines to text output |
+| `--sixel` | `-x` | Force Sixel protocol (use with `--visual`) |
+| `--iterm2` | `-i` | Force iTerm2 protocol (use with `--visual`) |
+| `--version` | `-V` | Print version |
 
 ### Output example
 

@@ -191,7 +191,8 @@ fn draw_header(area: &Area, data: &ChartData) -> Result<(), Box<dyn std::error::
     let font_info_dim = ("monospace", 17).into_font().color(&TEXT_DIM);
 
     area.draw(&Text::new("GYROTRIAGE", (30, 16), font_title))?;
-    area.draw(&Text::new("v1.0", (240, 22), font_ver))?;
+    let version_label = format!("v{}", env!("CARGO_PKG_VERSION"));
+    area.draw(&Text::new(version_label.as_str(), (240, 22), font_ver))?;
 
     let right_style = font_info.pos(Pos::new(HPos::Right, VPos::Top));
     area.draw(&Text::new(

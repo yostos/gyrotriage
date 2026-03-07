@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-03-07
+
+### Added
+
+- `--version` / `-V` option to display version information
+- Short options for all CLI flags: `-v` (visual), `-o` (output-image), `-s` (sparkline), `-x` (sixel), `-i` (iterm2)
+- GitHub Actions workflow to verify release tag matches Cargo.toml version
+
+### Changed
+
+- All user-facing messages (help, errors, hints) localized to English
+- Chart header version label now auto-derived from Cargo.toml via `env!("CARGO_PKG_VERSION")`
+
 ## [1.1.0-rc] - 2026-03-06
 
 ### Changed

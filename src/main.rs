@@ -19,29 +19,30 @@ use crate::error::GyroTriageError;
 
 #[derive(Parser)]
 #[command(name = "gyrotriage")]
-#[command(about = "DJI FPVドローンのMP4からブレ度合いをスコアリングし、Gyroflow推奨パラメータを提示する")]
+#[command(version)]
+#[command(about = "Score shake severity from DJI FPV drone MP4 and suggest Gyroflow parameters")]
 struct Cli {
-    /// 解析対象のMP4ファイル
+    /// MP4 file to analyze
     file: PathBuf,
 
-    /// Sixel/iTerm2でターミナルにグラフ表示
-    #[arg(long)]
+    /// Display graph in terminal via Sixel/iTerm2
+    #[arg(short = 'v', long)]
     visual: bool,
 
-    /// PNG画像ファイルに書き出し
-    #[arg(long, value_name = "PATH")]
+    /// Save chart as PNG image file
+    #[arg(short = 'o', long, value_name = "PATH")]
     output_image: Option<PathBuf>,
 
-    /// ANSIスパークラインをテキスト出力に追加
-    #[arg(long)]
+    /// Append ANSI sparklines to text output
+    #[arg(short = 's', long)]
     sparkline: bool,
 
-    /// Sixelプロトコルを強制
-    #[arg(long)]
+    /// Force Sixel protocol
+    #[arg(short = 'x', long)]
     sixel: bool,
 
-    /// iTerm2プロトコルを強制
-    #[arg(long)]
+    /// Force iTerm2 protocol
+    #[arg(short = 'i', long)]
     iterm2: bool,
 }
 

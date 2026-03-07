@@ -104,7 +104,7 @@ pub fn extract_quaternions(path: &Path) -> Result<ExtractedData, GyroTriageError
 }
 
 fn motion_data_hint() -> String {
-    "Neo/Neo2は4:3で撮影が必要。Avata/Avata2はEISオフ・FOV Wideが必要。".to_string()
+    "Neo/Neo2 requires 4:3 aspect ratio. Avata/Avata2 requires EIS off and FOV Wide.".to_string()
 }
 
 #[cfg(test)]
