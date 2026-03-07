@@ -64,14 +64,15 @@ gyrotriage <FILE> [OPTIONS]
 
 ### オプション
 
-| オプション | 説明 | マイルストーン |
-|---|---|---|
-| `--visual` | Sixel/iTerm2プロトコルによるグラフをターミナルに表示 | v2 |
-| `--output-image <PATH>` | PNG画像ファイルに書き出し（ターミナル表示なし） | v2 |
-| `--sparkline` | ANSIスパークラインをテキスト出力に追加 | v2 |
-| `--sixel` | Sixelプロトコルを強制（`--visual` と併用） | v2 |
-| `--iterm2` | iTerm2プロトコルを強制（`--visual` と併用） | v2 |
-| `--html` | HTMLレポートファイルを生成 | v3 |
+| オプション | 短縮形 | 説明 | マイルストーン |
+|---|---|---|---|
+| `--visual` | `-v` | Sixel/iTerm2プロトコルによるグラフをターミナルに表示 | v2 |
+| `--output-image <PATH>` | `-o` | PNG画像ファイルに書き出し（ターミナル表示なし） | v2 |
+| `--sparkline` | `-s` | ANSIスパークラインをテキスト出力に追加 | v2 |
+| `--sixel` | `-x` | Sixelプロトコルを強制（`--visual` と併用） | v2 |
+| `--iterm2` | `-i` | iTerm2プロトコルを強制（`--visual` と併用） | v2 |
+| `--version` | `-V` | バージョン情報を表示 | v1.2 |
+| `--html` | | HTMLレポートファイルを生成 | v3 |
 
 `--visual` と `--output-image` は併用可能。`--visual` と `--sparkline` は排他（`--visual` 優先）。
 
