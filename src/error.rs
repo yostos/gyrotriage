@@ -3,30 +3,30 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum GyroTriageError {
-    #[error("ファイルが見つかりません: {0}")]
+    #[error("File not found: {0}")]
     FileNotFound(PathBuf),
 
-    #[error("MP4ファイルではありません: {0}")]
+    #[error("Not an MP4 file: {0}")]
     NotMp4(PathBuf),
 
-    #[error("DJIメタデータが見つかりません: {0}")]
+    #[error("No DJI metadata found in {0}")]
     NoDjiMetadata(PathBuf),
 
-    #[error("モーションデータが見つかりません: {path}")]
+    #[error("No motion data found in {path}")]
     NoMotionData {
         path: PathBuf,
         hint: String,
     },
 
-    #[error("パースに失敗しました {path}: {source}")]
+    #[error("Failed to parse {path}: {source}")]
     ParseError {
         path: PathBuf,
         source: anyhow::Error,
     },
 
-    #[error("データ不足: クォータニオンサンプルが最低2つ必要ですが、{count}個しかありません")]
+    #[error("Insufficient data: need at least 2 quaternion samples, found {count}")]
     InsufficientData { count: usize },
 
-    #[error("チャートエラー: {0}")]
+    #[error("Chart error: {0}")]
     ChartError(String),
 }

@@ -111,7 +111,7 @@ mod tests {
     #[test]
     fn test_format_no_motion_data() {
         let path = PathBuf::from("DJI_20260227_0005.MP4");
-        let hint = "Neo/Neo2は4:3で撮影が必要。Avata/Avata2はEISオフ・FOV Wideが必要。";
+        let hint = "Neo/Neo2 requires 4:3 aspect ratio. Avata/Avata2 requires EIS off and FOV Wide.";
         let output = format_no_motion_data(&path, hint);
 
         assert!(output.contains("DJI_20260227_0005.MP4"));

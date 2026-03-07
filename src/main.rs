@@ -20,28 +20,28 @@ use crate::error::GyroTriageError;
 #[derive(Parser)]
 #[command(name = "gyrotriage")]
 #[command(version)]
-#[command(about = "DJI FPVドローンのMP4からブレ度合いをスコアリングし、Gyroflow推奨パラメータを提示する")]
+#[command(about = "Score shake severity from DJI FPV drone MP4 and suggest Gyroflow parameters")]
 struct Cli {
-    /// 解析対象のMP4ファイル
+    /// MP4 file to analyze
     file: PathBuf,
 
-    /// Sixel/iTerm2でターミナルにグラフ表示
+    /// Display graph in terminal via Sixel/iTerm2
     #[arg(short = 'v', long)]
     visual: bool,
 
-    /// PNG画像ファイルに書き出し
+    /// Save chart as PNG image file
     #[arg(short = 'o', long, value_name = "PATH")]
     output_image: Option<PathBuf>,
 
-    /// ANSIスパークラインをテキスト出力に追加
+    /// Append ANSI sparklines to text output
     #[arg(short = 's', long)]
     sparkline: bool,
 
-    /// Sixelプロトコルを強制
+    /// Force Sixel protocol
     #[arg(short = 'x', long)]
     sixel: bool,
 
-    /// iTerm2プロトコルを強制
+    /// Force iTerm2 protocol
     #[arg(short = 'i', long)]
     iterm2: bool,
 }
@@ -56,7 +56,7 @@ fn main() {
             process::exit(1);
         }
         Err(e) => {
-            eprintln!("エラー: {e}");
+            eprintln!("Error: {e}");
             process::exit(1);
         }
     }
@@ -98,7 +98,7 @@ fn run(cli: &Cli) -> Result<(), GyroTriageError> {
         if let Some(ref path) = cli.output_image {
             chart::render_to_file(&chart_data, path)
                 .map_err(|e| GyroTriageError::ChartError(e.to_string()))?;
-            eprintln!("チャートを保存しました: {}", path.display());
+            eprintln!("Chart saved to {}", path.display());
         }
 
         if cli.visual {
