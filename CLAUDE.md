@@ -13,13 +13,14 @@ gyrotriage: DJI FPVドローン（Avata/Neo系）のMP4からクォータニオ�
 - **単一ファイル入力** — ディレクトリ再帰探索は持たない。複数ファイルはシェル側で処理（ADR-002）
 - **CSV出力なし** — 確立されたユースケースがないため不採用（ADR-003）
 - **Gyroflowプラグイン版に一本化** — 推奨パラメータはGyroflow OpenFXプラグイン「Adjust parameters」形式で提示。スタンドアロン版向けは非サポート（ADR-005）
+- **解析区間指定** — `--in`/`--out`（ソースTC `HH:MM:SS:FF` または秒）で採用区間だけを解析可能。既定は全体解析（トリアージ用途）、区間指定時はその区間のみ（チューニング用途）。fpsはMP4から自動取得（ADR-006）
 - **かっこよさ最優先** — 未来的なHUDグラフィックがターミナルに表示される体験がこのツールの存在意義
 - **v2完了** — MVP（テキスト出力）+ v2（--visual/--output-image/--sparkline）実装済み
 - **推奨パラメータ（プラグイン版）** — 算出: Smoothness（1–300, 従来%値がそのまま一致）/ Zoom limit（%）/ FOV（ベースライン1.0）。固定推奨: Integration method=None / Lens correction=100（DJI特性ベース）
 
 ## Source Structure
 
-- `src/main.rs` — CLIエントリポイント、クォータニオン→角速度変換
+- `src/main.rs` — CLIエントリポイント、クォータニオン→角速度変換、タイムコード解析・解析区間フィルタ（--in/--out）
 - `src/analyze.rs` — 解析ロジック（RMS/Peak/軸分解/スコアリング）
 - `src/spectrum.rs` — FFT/PSD周波数解析（rustfft使用）
 - `src/recommend.rs` — PSDベースGyroflowプラグイン推奨パラメータ算出（Smoothness/Zoom limit/FOV + 固定推奨定数）
@@ -28,7 +29,7 @@ gyrotriage: DJI FPVドローン（Avata/Neo系）のMP4からクォータニオ�
 - `src/sparkline.rs` — ANSIスパークライン生成
 - `src/terminal.rs` — Sixel/iTerm2プロトコル検出・画像表示
 - `src/downsample.rs` — 時系列データのRMSダウンサンプリング
-- `src/extract.rs` — telemetry-parserによるMP4からのクォータニオン抽出
+- `src/extract.rs` — telemetry-parserによるMP4からのクォータニオン抽出、fps自動取得（util::get_video_metadata）
 - `src/error.rs` — エラー型定義
 
 ## Documentation
@@ -40,6 +41,7 @@ gyrotriage: DJI FPVドローン（Avata/Neo系）のMP4からクォータニオ�
 - `docs/adr-002-single-file-input.md` — ADR-002: 単一ファイル入力
 - `docs/adr-003-no-csv-output.md` — ADR-003: CSV出力不採用
 - `docs/adr-005-plugin-target.md` — ADR-005: Gyroflowプラグイン版への一本化
+- `docs/adr-006-analysis-range.md` — ADR-006: 解析区間の指定（--in/--out）
 - `docs/plugin-recommendation-feasibility.ja.md` — プラグイン版パラメータFeasibility検証（裏付け分析）
 - `docs/telemetry-parser-reference.md` — telemetry-parser技術リファレンス
 - `docs/todo.md` — 未決定事項トラッカー

@@ -12,6 +12,9 @@ use crate::error::GyroTriageError;
 pub struct ExtractedData {
     pub quaternions: Vec<TimeQuaternion<f64>>,
     pub camera_model: Option<String>,
+    /// Video frame rate read from the MP4 container, if available.
+    /// Used to convert the `:FF` field of `--in`/`--out` timecodes to seconds.
+    pub fps: Option<f64>,
 }
 
 /// Extract quaternion data from a DJI MP4 file.
@@ -58,6 +61,20 @@ pub fn extract_quaternions(path: &Path) -> Result<ExtractedData, GyroTriageError
 
     let camera_model = input.camera_model().cloned();
 
+    // Read the video frame rate from the container (used for timecode -> seconds).
+    // Best-effort: any failure or non-positive value leaves fps as None.
+    let fps = {
+        use std::io::Seek;
+        let fps = file
+            .seek(std::io::SeekFrom::Start(0))
+            .ok()
+            .and_then(|_| {
+                telemetry_parser::util::get_video_metadata(&mut file, filesize).ok()
+            })
+            .map(|(_w, _h, fps, _dur)| fps);
+        fps.filter(|f| *f > 0.0)
+    };
+
     // Extract quaternions from all samples
     let mut all_quaternions: Vec<TimeQuaternion<f64>> = Vec::new();
 
@@ -100,6 +117,7 @@ pub fn extract_quaternions(path: &Path) -> Result<ExtractedData, GyroTriageError
     Ok(ExtractedData {
         quaternions: all_quaternions,
         camera_model,
+        fps,
     })
 }
 

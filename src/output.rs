@@ -4,16 +4,26 @@ use crate::analyze::AnalysisResult;
 use crate::recommend::{Recommendation, INTEGRATION_METHOD, LENS_CORRECTION};
 
 /// Format the full analysis result as text output per spec.md.
-pub fn format_result(path: &Path, result: &AnalysisResult, rec: &Recommendation) -> String {
+pub fn format_result(
+    path: &Path,
+    result: &AnalysisResult,
+    rec: &Recommendation,
+    range: Option<&str>,
+) -> String {
     let filename = path
         .file_name()
         .map(|n| n.to_string_lossy())
         .unwrap_or_else(|| path.to_string_lossy());
 
+    let range_line = match range {
+        Some(r) => format!("\nRange:       {r}"),
+        None => String::new(),
+    };
+
     format!(
         "\
 File:        {filename}
-Duration:    {duration:.1}s ({samples} samples @ {rate:.0}Hz)
+Duration:    {duration:.1}s ({samples} samples @ {rate:.0}Hz){range_line}
 Score:       {score} / 100
 Level:       {level}
 RMS:         {rms:.1} °/s
@@ -97,10 +107,12 @@ mod tests {
             fov: 1.0,
         };
         let path = PathBuf::from("DJI_20260227_0001.MP4");
-        let output = format_result(&path, &result, &rec);
+        let output = format_result(&path, &result, &rec, None);
 
         assert!(output.contains("DJI_20260227_0001.MP4"));
         assert!(output.contains("72 / 100"));
+        // No range line when range is None
+        assert!(!output.contains("Range:"));
         assert!(output.contains("MODERATE"));
         assert!(output.contains("14.4 °/s"));
         // Plugin "Adjust parameters" format
@@ -114,6 +126,40 @@ mod tests {
         // Standalone-only params must no longer appear
         assert!(!output.contains("max@hv"));
         assert!(!output.contains("zooming_speed"));
+    }
+
+    #[test]
+    fn test_format_result_includes_range_line() {
+        let result = AnalysisResult {
+            duration_secs: 6.5,
+            sample_count: 1300,
+            sample_rate_hz: 200.0,
+            rms_velocity: 8.0,
+            peak_velocity: 20.0,
+            score: 38,
+            level: Level::Mild,
+            pitch: AxisStats { avg: 1.0, std_dev: 1.0, max: 1.0 },
+            roll: AxisStats { avg: 1.0, std_dev: 1.0, max: 1.0 },
+            yaw: AxisStats { avg: 1.0, std_dev: 1.0, max: 1.0 },
+            pitch_velocities: vec![],
+            roll_velocities: vec![],
+            yaw_velocities: vec![],
+        };
+        let rec = Recommendation {
+            smoothness: 28.0,
+            zoom_limit_pct: 115.0,
+            fov: 1.0,
+        };
+        let path = PathBuf::from("clip.MP4");
+        let range = "00:00:18.50 – 00:00:25.00 (of 120.5s)";
+        let output = format_result(&path, &result, &rec, Some(range));
+
+        assert!(output.contains("Range:       00:00:18.50 – 00:00:25.00 (of 120.5s)"));
+        // Range line sits between Duration and Score
+        let dur = output.find("Duration:").unwrap();
+        let rng = output.find("Range:").unwrap();
+        let score = output.find("Score:").unwrap();
+        assert!(dur < rng && rng < score);
     }
 
     #[test]
