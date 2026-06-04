@@ -1,6 +1,6 @@
 [package]
 name = "gyrotriage"
-version = "1.4.0"
+version = "1.4.1"
 edition = "2021"
 description = "Score shake severity from DJI FPV drone MP4 and suggest Gyroflow stabilization parameters"
 
