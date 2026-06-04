@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-06-04
+
+### Added
+
+- **Analysis range selection (`--in` / `--out`)** — analyze only the segment you actually use on the timeline instead of the whole file (ADR-006). Flight phases (takeoff, cruise, landing) differ in motion characteristics; restricting analysis to the used segment yields more accurate scores and recommended parameters.
+  - Accepts source timecode `HH:MM:SS:FF` (as shown in DaVinci Resolve's source viewer), `HH:MM:SS`, `MM:SS`, or fractional seconds.
+  - The fps needed to convert the `:FF` field is read automatically from the MP4 container (`telemetry_parser::util::get_video_metadata`); `--fps` overrides it.
+  - Default behavior (no options) is unchanged: the whole file is analyzed.
+- ADR-006 (analysis range selection).
+
 ## [1.3.0] - 2026-06-04
 
 ### Changed
