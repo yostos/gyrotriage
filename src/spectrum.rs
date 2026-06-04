@@ -155,15 +155,27 @@ pub fn analyze_spectrum(
     yaw: &[f64],
     sample_rate_hz: f64,
 ) -> SpectrumResult {
-    // Combine all axes for overall spectral analysis
-    let composite: Vec<f64> = pitch
-        .iter()
-        .zip(roll.iter())
-        .zip(yaw.iter())
-        .map(|((&p, &r), &y)| (p * p + r * r + y * y).sqrt())
-        .collect();
+    // Combine axes in the frequency domain: compute each axis' PSD separately and
+    // sum them bin-by-bin. PSD addition is linear and preserves each axis' zero
+    // mean, so no spurious DC component is introduced.
+    //
+    // NOTE: combining in the time domain via RSS (`sqrt(p²+r²+y²)`) rectifies the
+    // signal to non-negative values, injecting a large DC offset that inflates
+    // total_power and collapses shake_power_ratio toward zero (smoothness pinned
+    // near 15). Per-axis PSD summation avoids this entirely.
+    let (frequencies, psd_p) = compute_psd(pitch, sample_rate_hz);
+    let (_, psd_r) = compute_psd(roll, sample_rate_hz);
+    let (_, psd_y) = compute_psd(yaw, sample_rate_hz);
 
-    let (frequencies, psd) = compute_psd(&composite, sample_rate_hz);
+    let psd: Vec<f64> = frequencies
+        .iter()
+        .enumerate()
+        .map(|(i, _)| {
+            psd_p.get(i).copied().unwrap_or(0.0)
+                + psd_r.get(i).copied().unwrap_or(0.0)
+                + psd_y.get(i).copied().unwrap_or(0.0)
+        })
+        .collect();
 
     if frequencies.is_empty() {
         return SpectrumResult {
@@ -265,6 +277,34 @@ mod tests {
             "cutoff_hz={}", result.cutoff_hz
         );
         assert!(result.shake_power_ratio > 0.0);
+    }
+
+    /// Regression: shake-dominated multi-axis motion must yield a HIGH shake
+    /// power ratio. The previous RSS time-domain combine rectified the signal,
+    /// injecting a large DC offset that pinned this ratio near ~0.07 (smoothness
+    /// stuck at 15-20) regardless of actual shake. Per-axis PSD summation fixes it.
+    #[test]
+    fn test_shake_dominated_high_ratio() {
+        let n = 4000;
+        let rate = 200.0;
+        let mk = |intent_f: f64, intent_a: f64, shake_f: f64, shake_a: f64| -> Vec<f64> {
+            (0..n)
+                .map(|i| {
+                    let t = i as f64 / rate;
+                    intent_a * (2.0 * std::f64::consts::PI * intent_f * t).sin()
+                        + shake_a * (2.0 * std::f64::consts::PI * shake_f * t).sin()
+                })
+                .collect()
+        };
+        let pitch = mk(0.4, 2.0, 8.0, 8.0);
+        let roll = mk(0.4, 1.0, 9.0, 6.0);
+        let yaw = mk(0.3, 1.5, 7.0, 5.0);
+        let result = analyze_spectrum(&pitch, &roll, &yaw, rate);
+        assert!(
+            result.shake_power_ratio > 0.5,
+            "shake-dominated signal must have high shake ratio, got {}",
+            result.shake_power_ratio
+        );
     }
 
     /// Time constant conversion: τ = 1/(2π·fc)
