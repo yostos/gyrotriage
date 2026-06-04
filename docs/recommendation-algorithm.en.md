@@ -39,11 +39,14 @@ MP4 → quaternion extraction → angular velocity time series → FFT/PSD → s
 
 ### Step 1: PSD (Power Spectral Density) Computation
 
-FFT is performed on the 3-axis composite angular velocity (RSS: Root Sum Square).
+A PSD is computed for each axis (Pitch/Roll/Yaw) and the three PSDs are summed bin-by-bin to form the composite spectrum.
 
 1. Apply Hann window to suppress spectral leakage
 2. Execute FFT using the `rustfft` crate
 3. Compute one-sided PSD: `PSD[k] = |X[k]|^2 / (N × fs) × 2`
+4. Sum the per-axis PSDs: `PSD[k] = PSD_pitch[k] + PSD_roll[k] + PSD_yaw[k]`
+
+**Why per-axis summation (not time-domain RSS)**: Combining axes in the time domain via RSS (`sqrt(p²+r²+y²)`) rectifies the signal to non-negative values, injecting a large DC offset. That DC inflates total power and collapses the shake power ratio toward zero, pinning Smoothness near its 15 floor regardless of actual shake. PSD addition is linear and preserves each axis' zero mean, so no spurious DC is introduced.
 
 **Why PSD**: The angular velocity signal is a superposition of "intentional motion (low frequency)" and "shake/vibration (high frequency)". These two components have clearly separated frequency bands, and PSD allows objective detection of the boundary.
 

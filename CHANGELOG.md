@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2026-06-04
+
+### Fixed
+
+- **Recommended Smoothness no longer collapses to 15–20 regardless of footage.** `spectrum.rs` combined the three angular-velocity axes in the time domain via RSS (`sqrt(p²+r²+y²)`), which rectifies the signal to non-negative values and injects a large DC offset. That DC inflated total power and drove `shake_power_ratio` toward ~0.07, pinning the derived Smoothness near its 15 floor. Axes are now combined in the frequency domain (per-axis PSD summed bin-by-bin), which is linear and preserves each axis' zero mean, so no spurious DC is introduced. On a synthetic shake-dominated signal the ratio recovers from 0.07 to ~0.99.
+
 ## [1.4.0] - 2026-06-04
 
 ### Added
