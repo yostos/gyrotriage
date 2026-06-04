@@ -12,16 +12,17 @@ gyrotriage: DJI FPVドローン（Avata/Neo系）のMP4からクォータニオ�
 - **言語: Rust** — Gyroflowのtelemetry-parserクレートをそのまま利用するため（ADR-001）
 - **単一ファイル入力** — ディレクトリ再帰探索は持たない。複数ファイルはシェル側で処理（ADR-002）
 - **CSV出力なし** — 確立されたユースケースがないため不採用（ADR-003）
+- **Gyroflowプラグイン版に一本化** — 推奨パラメータはGyroflow OpenFXプラグイン「Adjust parameters」形式で提示。スタンドアロン版向けは非サポート（ADR-005）
 - **かっこよさ最優先** — 未来的なHUDグラフィックがターミナルに表示される体験がこのツールの存在意義
 - **v2完了** — MVP（テキスト出力）+ v2（--visual/--output-image/--sparkline）実装済み
-- **推奨パラメータv2完了** — FFT/PSDベースで5パラメータ（smoothness/max_smoothness/max@hv/zoom_limit/zooming_speed）算出
+- **推奨パラメータ（プラグイン版）** — 算出: Smoothness（1–300, 従来%値がそのまま一致）/ Zoom limit（%）/ FOV（ベースライン1.0）。固定推奨: Integration method=None / Lens correction=100（DJI特性ベース）
 
 ## Source Structure
 
 - `src/main.rs` — CLIエントリポイント、クォータニオン→角速度変換
 - `src/analyze.rs` — 解析ロジック（RMS/Peak/軸分解/スコアリング）
 - `src/spectrum.rs` — FFT/PSD周波数解析（rustfft使用）
-- `src/recommend.rs` — PSDベースGyroflow推奨パラメータ算出（5パラメータ）
+- `src/recommend.rs` — PSDベースGyroflowプラグイン推奨パラメータ算出（Smoothness/Zoom limit/FOV + 固定推奨定数）
 - `src/output.rs` — テキスト出力フォーマット
 - `src/chart.rs` — HUDスタイルチャート描画（1440×900 PNG、plotters BitMapBackend）
 - `src/sparkline.rs` — ANSIスパークライン生成
@@ -35,9 +36,11 @@ gyrotriage: DJI FPVドローン（Avata/Neo系）のMP4からクォータニオ�
 - `docs/spec.md` — 機能仕様書
 - `docs/concept.md` — 構想書
 - `docs/adr-004-visual-output.md` — ADR-004: ビジュアル出力仕様（HUDレイアウト詳細）
-- `docs/architectural-decision.md` — ADR-001: Rust採用
+- `docs/adr-001-rust-language.md` — ADR-001: Rust採用
 - `docs/adr-002-single-file-input.md` — ADR-002: 単一ファイル入力
 - `docs/adr-003-no-csv-output.md` — ADR-003: CSV出力不採用
+- `docs/adr-005-plugin-target.md` — ADR-005: Gyroflowプラグイン版への一本化
+- `docs/plugin-recommendation-feasibility.ja.md` — プラグイン版パラメータFeasibility検証（裏付け分析）
 - `docs/telemetry-parser-reference.md` — telemetry-parser技術リファレンス
 - `docs/todo.md` — 未決定事項トラッカー
 - `docs/recommendation-algorithm.ja.md` — 推奨パラメータ算出アルゴリズム（日本語）
@@ -48,7 +51,8 @@ gyrotriage: DJI FPVドローン（Avata/Neo系）のMP4からクォータニオ�
 - DJIドローンはIMU生データではなくクォータニオン（カメラ3D姿勢）をMP4のprotobufトラック(`djmd`)に記録する
 - DJI Neo: **4:3撮影が必須**（16:9ではEIS強制オン→モーションデータなし）。FOVは117.6°固定
 - DJI Avata: EIS(Rocksteady)オフ + FOV Wide が必要
-- 推奨パラメータはFFT/PSD周波数解析から算出（`docs/recommendation-algorithm.ja.md` 参照）
+- 推奨パラメータはFFT/PSD周波数解析から算出（`docs/recommendation-algorithm.ja.md` 参照）。提示先はGyroflowプラグイン「Adjust parameters」。プラグインのSmoothnessはコア値×100（1–300）で、従来の`%`値がそのまま使える
+- DJI素材ではGyroflowのIntegration methodは必ず`None`（クォータニオン記録済みのため再積分不要）
 
 ## Build Commands
 

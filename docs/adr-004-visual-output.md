@@ -108,8 +108,11 @@ gyrotriage clip.MP4 --sparkline                     # テキスト+スパーク�
 #### フッター
 
 - 判定レベルがMODERATE以上（Gyroflow推奨）の場合のみ表示
-- 表示内容: `Recommended Gyroflow parameters: smoothness=XX%  max=X.XXXs  max@hv=X.XXXs  zoom_limit=XXX%  zooming_speed=X.Xs`
+- 表示内容（Gyroflowプラグイン版「Adjust parameters」形式 → ADR-005）:
+  `Gyroflow plugin: Smoothness=XX  Zoom limit=XXX  FOV=X.XXX  Integration method=None`
 - STABLE/MILDの場合はフッター行を表示しない
+- ※ 初版は単体版5パラメータ（smoothness/max/max@hv/zoom_limit/zooming_speed）を表示していたが、
+  ADR-005（プラグイン版への一本化）に伴いプラグイン形式へ変更
 
 ### 配色（Tokyo Night系・寒色基調）
 
@@ -179,8 +182,12 @@ Score:       100 / 100
 Level:       SEVERE
 ...
 ---
-Gyroflow:    smoothness=21%  max=0.300s  max@hv=0.030s
-             zoom_limit=118%  zooming_speed=2.6s
+Gyroflow plugin (Adjust parameters):
+  Smoothness:           21
+  Zoom limit:           118
+  FOV:                  1.000
+  Integration method:   None
+  Lens correction:      100
 
 Shake:  ▁▂▃▅▇█▇▅▃▂▁▂▄▆█▇▅▃▁▁▂▃▅▇█▆▄▂▁▁
 Pitch:  ▁▁▁▂▂▃▂▂▁▁▁▁▂▂▃▂▁▁▁▁▁▁▂▂▃▂▂▁▁▁

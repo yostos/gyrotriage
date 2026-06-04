@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-06-04
+
+### Changed
+
+- **Recommended parameters now target the Gyroflow OpenFX plugin** ("Adjust parameters" panel; DaVinci Resolve, etc.) instead of the standalone app (ADR-005). Standalone-app parameter sets are no longer supported.
+  - Computed: `Smoothness` (plugin value 1–300; the previous `%` value maps unchanged), `Zoom limit` (%), `FOV` (baseline 1.0)
+  - Fixed DJI recommendations now shown: `Integration method = None`, `Lens correction = 100`
+- Text and HUD-footer output reformatted to the plugin "Adjust parameters" layout.
+- Tool positioning rewritten to a plugin-centric workflow (the earlier "pre-stabilize in standalone, then import to Resolve" premise was incorrect).
+
+### Removed
+
+- Standalone-only recommended parameters: `Max smoothness`, `Max smoothness at high velocity`, `Zooming speed` (not exposed by the plugin's single Smoothness slider).
+
+### Added
+
+- ADR-005 (Gyroflow plugin target) and a plugin-parameter feasibility study.
+
+### Docs
+
+- Renamed `docs/architectural-decision.md` → `docs/adr-001-rust-language.md` for ADR naming consistency.
+
 ## [1.2.0] - 2026-03-07
 
 ### Added

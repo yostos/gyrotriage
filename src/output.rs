@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use crate::analyze::AnalysisResult;
-use crate::recommend::Recommendation;
+use crate::recommend::{Recommendation, INTEGRATION_METHOD, LENS_CORRECTION};
 
 /// Format the full analysis result as text output per spec.md.
 pub fn format_result(path: &Path, result: &AnalysisResult, rec: &Recommendation) -> String {
@@ -22,8 +22,12 @@ Pitch:       avg={pavg:.1}°/s  std={pstd:.1}°/s  max={pmax:.1}°/s
 Roll:        avg={ravg:.1}°/s  std={rstd:.1}°/s  max={rmax:.1}°/s
 Yaw:         avg={yavg:.1}°/s  std={ystd:.1}°/s  max={ymax:.1}°/s
 ---
-Gyroflow:    smoothness={smoothness:.0}%  max={max_s:.3}s  max@hv={max_hv:.3}s
-             zoom_limit={zoom:.0}%  zooming_speed={zspeed:.1}s",
+Gyroflow plugin (Adjust parameters):
+  Smoothness:           {smoothness:.0}
+  Zoom limit:           {zoom:.0}
+  FOV:                  {fov:.3}
+  Integration method:   {integration}
+  Lens correction:      {lens:.0}",
         duration = result.duration_secs,
         samples = result.sample_count,
         rate = result.sample_rate_hz,
@@ -40,11 +44,11 @@ Gyroflow:    smoothness={smoothness:.0}%  max={max_s:.3}s  max@hv={max_hv:.3}s
         yavg = result.yaw.avg,
         ystd = result.yaw.std_dev,
         ymax = result.yaw.max,
-        smoothness = rec.smoothness_pct,
-        max_s = rec.max_smoothness_s,
-        max_hv = rec.max_smoothness_at_high_velocity_s,
+        smoothness = rec.smoothness,
         zoom = rec.zoom_limit_pct,
-        zspeed = rec.zooming_speed_s,
+        fov = rec.fov,
+        integration = INTEGRATION_METHOD,
+        lens = LENS_CORRECTION,
     )
 }
 
@@ -88,11 +92,9 @@ mod tests {
             yaw_velocities: vec![],
         };
         let rec = Recommendation {
-            smoothness_pct: 28.0,
-            max_smoothness_s: 0.700,
-            max_smoothness_at_high_velocity_s: 0.100,
+            smoothness: 28.0,
             zoom_limit_pct: 115.0,
-            zooming_speed_s: 4.0,
+            fov: 1.0,
         };
         let path = PathBuf::from("DJI_20260227_0001.MP4");
         let output = format_result(&path, &result, &rec);
@@ -101,11 +103,17 @@ mod tests {
         assert!(output.contains("72 / 100"));
         assert!(output.contains("MODERATE"));
         assert!(output.contains("14.4 °/s"));
-        assert!(output.contains("smoothness=28%"));
-        assert!(output.contains("max=0.700s"));
-        assert!(output.contains("max@hv=0.100s"));
-        assert!(output.contains("zoom_limit=115%"));
-        assert!(output.contains("zooming_speed=4.0s"));
+        // Plugin "Adjust parameters" format
+        assert!(output.contains("Gyroflow plugin (Adjust parameters):"));
+        assert!(output.contains("Smoothness:           28"));
+        assert!(output.contains("Zoom limit:           115"));
+        assert!(output.contains("FOV:                  1.000"));
+        // Fixed DJI recommendations
+        assert!(output.contains("Integration method:   None"));
+        assert!(output.contains("Lens correction:      100"));
+        // Standalone-only params must no longer appear
+        assert!(!output.contains("max@hv"));
+        assert!(!output.contains("zooming_speed"));
     }
 
     #[test]

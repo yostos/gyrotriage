@@ -118,19 +118,41 @@ MVPではパン・チルトとブレの区別は行わない。全角変位を�
 | MODERATE | 51–75 | 10–15°/s | 明確なブレあり、Gyroflow推奨 |
 | SEVERE | 76–100 | > 15°/s | 激しいブレ、Gyroflow強く推奨 |
 
-### Gyroflow推奨パラメータ
+### Gyroflow推奨パラメータ（プラグイン版「Adjust parameters」形式）
 
-角速度時系列のFFT/PSD（パワースペクトル密度）解析に基づき、Gyroflowの5つのスタビライゼーションパラメータのベースライン値を提示する。これはあくまで調整の出発点であり、最終的なパラメータはGyroflowのプレビューで映像を見ながらユーザーが決定する。
+推奨パラメータは **Gyroflow OpenFX プラグイン**（DaVinci Resolve 等）の「Adjust parameters」
+パネルにそのまま入力できる形式で提示する。スタンドアロン版向けの提示はサポートしない（→ ADR-005）。
 
-算出アルゴリズムの詳細は `docs/recommendation-algorithm.ja.md` を参照。
+これらはあくまで調整の出発点であり、最終的なパラメータはプラグインのプレビューで映像を見ながら
+ユーザーが決定する。算出アルゴリズムの詳細は `docs/recommendation-algorithm.ja.md` を参照。
 
-| パラメータ | 単位 | 推奨範囲 | 算出根拠 |
-|---|---|---|---|
-| Smoothness | % | 15–50% | PSDのshake power ratio + RMS角速度 |
-| Max smoothness | 秒 | 0.3–2.0s | PSDカットオフ周波数 → 時定数 τ = 1/(2πfc) |
-| Max smoothness at high velocity | 秒 | 0.03–0.3s | 高速回転帯域のカットオフ → 時定数 |
-| Zoom limit | % | 105–140% | Smoothness + RMS角速度からの推定 |
-| Zooming speed | 秒 | 2.0–6.0s | 角速度のローリングRMSの変動係数（CV） |
+#### 算出するパラメータ（モーション解析ベース）
+
+角速度時系列のFFT/PSD（パワースペクトル密度）解析に基づいて算出する。
+
+| パラメータ | 単位/レンジ | 算出根拠 |
+|---|---|---|
+| Smoothness | 数値 1–300 | PSDのshake power ratio + RMS角速度（従来の `%` 値がそのままプラグイン値に一致） |
+| Zoom limit | % 51–300 | Smoothness + RMS角速度からの推定 |
+| FOV | 倍率 0.1–3.0 | 算出ロジックは持たず、ベースライン **1.0** を提示（将来課題） |
+
+> プラグインの Smoothness はコア値×100（min:1/max:300/default:50）。gyrotriage の従来
+> `smoothness_pct`（15–50）は変換なしでプラグイン値として使える（→ ADR-005、feasibility doc §3）。
+
+#### 固定推奨パラメータ（DJI機特性ベース）
+
+モーション解析からは決定できないが、DJI FPV専用ツールとして確信を持って提示できる項目。
+
+| パラメータ | 推奨値 | 理由 |
+|---|---|---|
+| Integration method | **None** | DJI機はクォータニオン（カメラ姿勢）を記録済みのため再積分不要 |
+| Lens correction | **100** | 正しいDJIレンズプロファイル/プリセット読込を前提に完全適用 |
+
+#### その他のパラメータ
+
+Horizon lock/roll、Additional pitch/yaw、Video/Input rotation、Video speed、Disable stretch は
+ユーザーの演出意図・機材取付・編集設定に依存するため算出・固定推奨しない。デフォルト値の
+ままとし、ケース別の設定指針を `docs/plugin-recommendation-feasibility.ja.md` §5 に示す。
 
 ## 出力仕様
 
@@ -147,8 +169,12 @@ Pitch:       avg=8.2°/s  std=4.5°/s  max=32.1°/s
 Roll:        avg=3.4°/s  std=2.2°/s  max=18.7°/s
 Yaw:         avg=5.6°/s  std=3.1°/s  max=24.4°/s
 ---
-Gyroflow:    smoothness=28%  max=0.700s  max@hv=0.100s
-             zoom_limit=115%  zooming_speed=4.0s
+Gyroflow plugin (Adjust parameters):
+  Smoothness:           28
+  Zoom limit:           115
+  FOV:                  1.000
+  Integration method:   None
+  Lens correction:      100
 ```
 
 ### モーションデータなしの場合（MVP）
