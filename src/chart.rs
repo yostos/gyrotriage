@@ -59,11 +59,9 @@ pub struct ChartData {
     pub pitch_rms: f64,
     pub roll_rms: f64,
     pub yaw_rms: f64,
-    pub smoothness_pct: f64,
-    pub max_smoothness_s: f64,
-    pub max_smoothness_at_high_velocity_s: f64,
+    pub smoothness: f64,
     pub zoom_limit_pct: f64,
-    pub zooming_speed_s: f64,
+    pub fov: f64,
     pub composite_bins: Vec<f64>,
     pub pitch_bins: Vec<f64>,
     pub roll_bins: Vec<f64>,
@@ -93,11 +91,9 @@ pub fn prepare_data(
         pitch_rms: result.pitch.avg,
         roll_rms: result.roll.avg,
         yaw_rms: result.yaw.avg,
-        smoothness_pct: rec.smoothness_pct,
-        max_smoothness_s: rec.max_smoothness_s,
-        max_smoothness_at_high_velocity_s: rec.max_smoothness_at_high_velocity_s,
+        smoothness: rec.smoothness,
         zoom_limit_pct: rec.zoom_limit_pct,
-        zooming_speed_s: rec.zooming_speed_s,
+        fov: rec.fov,
         composite_bins: comp_bins.iter().map(|b| b.rms).collect(),
         pitch_bins: axis_bins.iter().map(|b| b.pitch_rms).collect(),
         roll_bins: axis_bins.iter().map(|b| b.roll_rms).collect(),
@@ -512,39 +508,39 @@ fn draw_footer(area: &Area, data: &ChartData) -> Result<(), Box<dyn std::error::
         GRID.stroke_width(1),
     ))?;
 
-    // Show Gyroflow parameters only for MODERATE+
+    // Show Gyroflow plugin parameters only for MODERATE+
     if data.level == Level::Moderate || data.level == Level::Severe {
         let font_label = ("monospace", 18).into_font().color(&TEXT_DIM);
         let font_val = ("monospace", 20).into_font().color(&CYAN);
 
         area.draw(&Text::new(
-            "Recommended Gyroflow parameters:",
+            "Gyroflow plugin:",
             (30, y + 18),
             font_label,
         ))?;
         area.draw(&Text::new(
-            format!("smoothness={:.0}%", data.smoothness_pct).as_str(),
-            (420, y + 16),
+            format!("Smoothness={:.0}", data.smoothness).as_str(),
+            (240, y + 16),
             font_val.clone(),
         ))?;
         area.draw(&Text::new(
-            format!("max={:.3}s", data.max_smoothness_s).as_str(),
-            (600, y + 16),
+            format!("Zoom limit={:.0}", data.zoom_limit_pct).as_str(),
+            (460, y + 16),
             font_val.clone(),
         ))?;
         area.draw(&Text::new(
-            format!("max@hv={:.3}s", data.max_smoothness_at_high_velocity_s).as_str(),
-            (770, y + 16),
+            format!("FOV={:.3}", data.fov).as_str(),
+            (690, y + 16),
             font_val.clone(),
         ))?;
         area.draw(&Text::new(
-            format!("zoom_limit={:.0}%", data.zoom_limit_pct).as_str(),
-            (990, y + 16),
+            format!("Integration={}", crate::recommend::INTEGRATION_METHOD).as_str(),
+            (850, y + 16),
             font_val.clone(),
         ))?;
         area.draw(&Text::new(
-            format!("zooming_speed={:.1}s", data.zooming_speed_s).as_str(),
-            (1170, y + 16),
+            format!("Lens correction={:.0}", crate::recommend::LENS_CORRECTION).as_str(),
+            (1110, y + 16),
             font_val,
         ))?;
     }
@@ -642,11 +638,9 @@ mod tests {
             yaw_velocities: vec![],
         };
         let rec = Recommendation {
-            smoothness_pct: 28.0,
-            max_smoothness_s: 0.700,
-            max_smoothness_at_high_velocity_s: 0.100,
+            smoothness: 28.0,
             zoom_limit_pct: 115.0,
-            zooming_speed_s: 4.0,
+            fov: 1.0,
         };
         (result, rec)
     }

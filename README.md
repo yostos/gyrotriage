@@ -10,12 +10,11 @@ Renders futuristic HUD-style graphics directly in your terminal.
 
 - Extracts quaternion attitude data from MP4 (via telemetry-parser)
 - RMS angular velocity based shake score (0–100) with 4-level grading (STABLE/MILD/MODERATE/SEVERE)
-- **FFT/PSD-based Gyroflow parameter recommendation** — estimates 5 stabilization parameters from frequency analysis of angular velocity data:
-  - Smoothness (%)
-  - Max smoothness (s)
-  - Max smoothness at high velocity (s)
-  - Zoom limit (%)
-  - Zooming speed (s)
+- **FFT/PSD-based Gyroflow plugin parameter recommendation** — produces values for the Gyroflow OpenFX plugin's "Adjust parameters" panel (DaVinci Resolve, etc.):
+  - Smoothness (computed; plugin value 1–300)
+  - Zoom limit (computed; %)
+  - FOV (baseline 1.0)
+  - Integration method = None, Lens correction = 100 (fixed DJI recommendations)
 - HUD-style graphical output (score gauge, radar chart, 4-axis line graphs)
 - Sixel / iTerm2 protocol terminal inline image display
 - ANSI sparkline lightweight visualization
@@ -75,8 +74,12 @@ Pitch:       avg=1.4°/s  std=2.2°/s  max=47.9°/s
 Roll:        avg=11.7°/s  std=13.5°/s  max=251.1°/s
 Yaw:         avg=3.3°/s  std=4.4°/s  max=89.0°/s
 ---
-Gyroflow:    smoothness=21%  max=0.300s  max@hv=0.030s
-             zoom_limit=118%  zooming_speed=2.6s
+Gyroflow plugin (Adjust parameters):
+  Smoothness:           21
+  Zoom limit:           118
+  FOV:                  1.000
+  Integration method:   None
+  Lens correction:      100
 ```
 
 ## Supported Devices
@@ -97,17 +100,24 @@ Motion data is not recorded when shooting in 16:9 (Neo/Neo2) or with EIS enabled
 | MODERATE | 51–75 | 10–15 deg/s | Noticeable shake, Gyroflow recommended |
 | SEVERE | 76–100 | > 15 deg/s | Heavy shake, Gyroflow strongly recommended |
 
-## Gyroflow Parameter Recommendation
+## Gyroflow Plugin Parameter Recommendation
 
-gyrotriage estimates Gyroflow stabilization parameters using FFT/PSD (Power Spectral Density) analysis of the angular velocity time series. The approach is based on signal processing — no training data or subjective quality assessment is required.
+gyrotriage produces values for the **Gyroflow OpenFX plugin** ("Adjust parameters" panel) using FFT/PSD (Power Spectral Density) analysis of the angular velocity time series. The approach is based on signal processing — no training data or subjective quality assessment is required. Standalone-app parameter sets are not supported (see ADR-005).
 
-| Parameter | How it's estimated |
-|---|---|
-| Smoothness (%) | PSD shake power ratio + RMS angular velocity |
-| Max smoothness (s) | PSD cutoff frequency → time constant τ = 1/(2πfc) |
-| Max smoothness at high velocity (s) | High-velocity cutoff frequency → time constant |
-| Zoom limit (%) | Derived from smoothness + RMS angular velocity |
-| Zooming speed (s) | Coefficient of variation of rolling RMS angular velocity |
+Computed from motion analysis:
+
+| Parameter | Range | How it's estimated |
+|---|---|---|
+| Smoothness | 1–300 | PSD shake power ratio + RMS angular velocity (used directly as the plugin value) |
+| Zoom limit | 51–300% | Derived from smoothness + RMS angular velocity |
+| FOV | 0.1–3.0 | Not computed; baseline 1.0 |
+
+Fixed recommendations for DJI footage:
+
+| Parameter | Value | Reason |
+|---|---|---|
+| Integration method | None | DJI records quaternions, so no re-integration is needed |
+| Lens correction | 100 | Full correction, assuming the correct DJI lens profile is loaded |
 
 For the full algorithm details, see:
 - [docs/recommendation-algorithm.en.md](docs/recommendation-algorithm.en.md) (English)
@@ -120,7 +130,9 @@ For the full algorithm details, see:
 - [docs/recommendation-algorithm.en.md](docs/recommendation-algorithm.en.md) — Recommendation algorithm (English)
 - [docs/recommendation-algorithm.ja.md](docs/recommendation-algorithm.ja.md) — Recommendation algorithm (Japanese)
 - [docs/adr-004-visual-output.md](docs/adr-004-visual-output.md) — Visual output specification (ADR-004)
-- [docs/architectural-decision.md](docs/architectural-decision.md) — Rust adoption decision (ADR-001)
+- [docs/adr-005-plugin-target.md](docs/adr-005-plugin-target.md) — Gyroflow plugin target decision (ADR-005)
+- [docs/plugin-recommendation-feasibility.ja.md](docs/plugin-recommendation-feasibility.ja.md) — Plugin parameter feasibility study (Japanese)
+- [docs/adr-001-rust-language.md](docs/adr-001-rust-language.md) — Rust adoption decision (ADR-001)
 
 ## Development
 

@@ -150,7 +150,7 @@ mod tests {
     #[test]
     fn test_quantize_half() {
         let idx = quantize(5.0, 10.0);
-        assert!(idx >= 3 && idx <= 4, "Half should be near middle, got {idx}");
+        assert!((3..=4).contains(&idx), "Half should be near middle, got {idx}");
     }
 
     #[test]
@@ -177,7 +177,7 @@ mod tests {
         let row = render_row_with_max(&values, 10, 10.0);
         let chars: Vec<char> = row.chars().collect();
         let idx = BLOCKS.iter().position(|&c| c == chars[0]).unwrap();
-        assert!(idx >= 3 && idx <= 4, "Half of max should be mid-level, got {idx}");
+        assert!((3..=4).contains(&idx), "Half of max should be mid-level, got {idx}");
     }
 
     #[test]

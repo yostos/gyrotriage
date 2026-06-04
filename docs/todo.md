@@ -16,7 +16,9 @@
 
 - [x] ~~ブレスコアからGyroflow推奨パラメータ（smoothness、crop）への対応ロジックを定義する~~
   - **v0.1.0（旧）**: 区分線形マッピング。根拠のない恣意的な値だった
-  - **v0.2.0（現行）**: FFT/PSD周波数解析ベースに全面書き換え。Gyroflowの実際のパラメータ仕様を調査した上で、5パラメータ（smoothness %, max smoothness, max smoothness at high velocity, zoom limit, zooming speed）を信号処理から導出。→ `docs/recommendation-algorithm.ja.md` 参照
+  - **v0.2.0**: FFT/PSD周波数解析ベースに全面書き換え。単体版5パラメータ（smoothness %, max smoothness, max smoothness at high velocity, zoom limit, zooming speed）を信号処理から導出
+  - **現行（ADR-005）**: Gyroflowプラグイン版に一本化。単体版固有3パラメータ（max smoothness/max@hv/zooming speed）を廃止し、Smoothness（1–300）/ Zoom limit（%）/ FOV（1.0）+ 固定推奨（Integration method=None, Lens correction=100）を提示。→ `docs/recommendation-algorithm.ja.md`、`docs/adr-005-plugin-target.md` 参照
+- [ ] FOVの自動算出（現状はベースライン1.0固定。Zoom limitとの役割分担を整理した上で将来実装）
 
 ## 解析ロジック
 
